@@ -1,5 +1,6 @@
 package com.example.demo.config;
 
+import com.example.demo.jwt.JWTUtil;
 import com.example.demo.jwt.LoginFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,12 +17,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity //Security를 위한 Config이기 때문에
 public class SecurityConfig {
 
-    //AuthenticationManager가 인자로 받을 AuthenticationConfiguraion 객체 생성자 주입
+    //AuthenticationManager가 인자로 받을 AuthenticationConfiguraion, JWTUtil 객체 생성자 주입
     private final AuthenticationConfiguration authenticationConfiguration;
+    private final JWTUtil jwtUtil;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration) {
+
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil) {
 
         this.authenticationConfiguration = authenticationConfiguration;
+        this.jwtUtil = jwtUtil;
     }
 
     // LoginFilter에서 AuthenticationManager를 주입받았기 때문에 SecurityConfig에서도 주입하고,
@@ -68,7 +72,7 @@ public class SecurityConfig {
         // 5. UsernamePasswordAuthenticationFilter를 커스텀한 LoginFilter 등록
         // UsernamePasswordAuthenticationFilter를 대채해서 등록하는 것이기 때문에 addFilterAt 선택
         // addFilterBefore는 지정한 필터 전에 등록하는 것, addFilterAfter는 지정한 필터 후에 등록하는 것
-        http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration)), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         // 6. 세션 설정
         // JWT 방식에서는 세션을 stateless 방식으로 관리하므로 stateless 상태로 설정해주어야 한다
