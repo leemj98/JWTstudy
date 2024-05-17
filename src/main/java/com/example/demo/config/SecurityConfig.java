@@ -1,5 +1,6 @@
 package com.example.demo.config;
 
+import com.example.demo.jwt.JWTFilter;
 import com.example.demo.jwt.JWTUtil;
 import com.example.demo.jwt.LoginFilter;
 import org.springframework.context.annotation.Bean;
@@ -69,12 +70,15 @@ public class SecurityConfig {
                 .requestMatchers("/admin").hasRole("ADMIN") // admin 경로는 ADMIN이라는 권한을 가진 사용자만 접근 가능
                 .anyRequest().authenticated()); // 그 외 요청(anyRequest)은 로그인된 사용자만 접근 가능(authenticated)
 
-        // 5. UsernamePasswordAuthenticationFilter를 커스텀한 LoginFilter 등록
+        // 5. LoginFilter 앞에 JWTFilter 등록
+        http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+
+        // 6. UsernamePasswordAuthenticationFilter를 커스텀한 LoginFilter 등록
         // UsernamePasswordAuthenticationFilter를 대채해서 등록하는 것이기 때문에 addFilterAt 선택
         // addFilterBefore는 지정한 필터 전에 등록하는 것, addFilterAfter는 지정한 필터 후에 등록하는 것
         http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
-        // 6. 세션 설정
+        // 7. 세션 설정
         // JWT 방식에서는 세션을 stateless 방식으로 관리하므로 stateless 상태로 설정해주어야 한다
         http.sessionManagement((session)->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
